@@ -334,6 +334,9 @@ ramips_board_detect() {
 	*"Lenovo Y1S")
 		name="y1s"
 		;;
+	*"HiWiFi HC5661")
+		name="hc5661"
+		;;
 	*)
 		name="generic"
 		;;

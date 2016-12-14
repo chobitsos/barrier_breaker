@@ -210,6 +210,11 @@ case $board in
 		set_usb_led "lenovo:blue:usb"
 		set_wifi_led "lenovo:blue:wifi"
 		;;
+	hc5661)
+		ucidef_set_led_default "power" "power" "hc5661:power" "1"
+		ucidef_set_led_netdev "wan" "wan" "hc5661:internet" "eth0.2"
+		set_wifi_led "hc5661:wifi"
+		;;
 esac
 
 ucidef_commit_leds

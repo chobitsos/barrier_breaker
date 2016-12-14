@@ -193,6 +193,9 @@ get_status_led() {
 	y1s)
 		status_led="lenovo:blue:power"
 		;;
+	hc5661)
+		status_led="hc5661:power"
+		;;
 	esac
 }
 
