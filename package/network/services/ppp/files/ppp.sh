@@ -16,7 +16,6 @@ ppp_generic_init_config() {
 	proto_config_add_string pppd_options
 	proto_config_add_string 'connect:file'
 	proto_config_add_string 'disconnect:file'
-	proto_config_add_boolean ipv6
 	proto_config_add_boolean authfail
 	proto_config_add_int mtu
 	proto_config_add_string pppname
@@ -25,12 +24,7 @@ ppp_generic_init_config() {
 ppp_generic_setup() {
 	local config="$1"; shift
 
-	json_get_vars ipv6 demand keepalive username password pppd_options pppname
-	if [ "$ipv6" = 0 ]; then
-		ipv6=""
-	else
-		ipv6=1
-	fi
+	json_get_vars demand keepalive username password pppd_options pppname
 	if [ "${demand:-0}" -gt 0 ]; then
 		demand="precompiled-active-filter /etc/ppp/filter demand idle $demand"
 	else
@@ -49,7 +43,6 @@ ppp_generic_setup() {
 		nodetach ipparam "$config" \
 		ifname "$pppname" \
 		${keepalive:+lcp-echo-interval $interval lcp-echo-failure ${keepalive%%[, ]*}} \
-		${ipv6:++ipv6} \
 		nodefaultroute \
 		usepeerdns \
 		$demand maxfail 1 \
@@ -57,9 +50,7 @@ ppp_generic_setup() {
 		${connect:+connect "$connect"} \
 		${disconnect:+disconnect "$disconnect"} \
 		ip-up-script /lib/netifd/ppp-up \
-		ipv6-up-script /lib/netifd/ppp-up \
 		ip-down-script /lib/netifd/ppp-down \
-		ipv6-down-script /lib/netifd/ppp-down \
 		${mtu:+mtu $mtu mru $mtu} \
 		"$@" $pppd_options
 }
