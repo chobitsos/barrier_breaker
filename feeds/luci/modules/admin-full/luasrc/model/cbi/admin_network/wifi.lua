@@ -317,7 +317,6 @@ if hwtype == "atheros" then
 end
 
 
-
 ------------------- Broadcom Device ------------------
 
 if hwtype == "broadcom" then
@@ -364,6 +363,83 @@ if hwtype == "broadcom" then
 
 	s:taboption("advanced", Value, "country", translate("Country Code"))
 	s:taboption("advanced", Value, "maxassoc", translate("Connection Limit"))
+end
+
+
+------------------- Ralink Device ------------------
+
+if hwtype == "rt2860v2"  or hwtype == "mt7610"  or hwtype == "mt7612" or hwtype == "mt7601u"   then
+	tp = s:taboption("general",
+		(#tx_power_list > 0) and ListValue or Value,
+		"txpower", translate("Transmit Power"), "Max 20 dBm")
+
+	tp.rmempty = true
+	tp.default = tx_power_cur
+	tp:value("1", "1%")
+	tp:value("10", "10%")
+	tp:value("20", "20%")
+	tp:value("30", "30%")
+	tp:value("40", "40%")
+	tp:value("50", "50%")
+	tp:value("60", "60%")
+	tp:value("70", "70%")
+	tp:value("80", "80%")
+	tp:value("90", "90%")
+	tp:value("100", "100%")
+--	function tp.cfgvalue(...)
+--		return txpower_current(Value.cfgvalue(...), tx_power_list)
+--	end
+
+--	for _, p in ipairs(tx_power_list) do
+--		tp:value(p.driver_dbm, "%i dBm (%i mW)"
+--			%{ p.display_dbm, p.display_mw })
+--	end
+
+	mode = s:taboption("advanced", ListValue, "mode", translate("Mode"))
+	if hwtype == "rt2860v2"  or hwtype == "mt7601u"  then
+		mode:value("9", "802.11b/g/n mixed")
+		mode:value("0", "802.11b/g mixed")
+		mode:value("7", "802.11g/n mixed")
+		mode:value("1", "802.11b only")
+		mode:value("4", "802.11g only")
+		mode:value("6", "802.11n only")
+	else
+		mode:value("13", "802.11a only")
+		mode:value("14", "802.11a/an/ac mixed")
+		mode:value("15", "802.11an/ac only")
+	end
+	
+	htmode = s:taboption("advanced", ListValue, "ht", translate("HT mode"))
+	htmode:value("20", translate("20MHz"))
+	htmode:value("20+40", translate("20/40MHz"))
+	htmode:value("40", translate("40MHz only"))
+	if hwtype == "mt7610"  or hwtype == "mt7612"  then
+		htmode:value("20+40+80", translate("20/40/80MHz"))
+		htmode:value("40+80", translate("40/80MHz"))
+		htmode:value("80", translate("80MHz only"))
+	end	
+	--s:taboption("advanced", Flag, "frameburst", translate("Frame Bursting"))
+
+	--s:taboption("advanced", Value, "distance", translate("Distance Optimization"))
+	--s:option(Value, "slottime", translate("Slot time"))
+	
+	s:taboption("advanced", Flag, "greenap", translate("Green AP"))
+	s:taboption("advanced", Value, "country", translate("Country Code"))
+	s:taboption("advanced", Value, "maxassoc", translate("Connection Limit"))
+	
+	s:taboption("advanced", Value, "frag", translate("Fragmentation Threshold"))
+	s:taboption("advanced", Value, "rts", translate("RTS/CTS Threshold"))
+
+	
+	mp = s:taboption("macfilter", ListValue, "macpolicy", translate("MAC-Address Filter"))
+	mp:value("", translate("disable"))
+	mp:value("allow", translate("Allow listed only"))
+	mp:value("deny", translate("Allow all except listed"))
+	ml = s:taboption("macfilter", DynamicList, "maclist", translate("MAC-List"))
+	ml:depends({macpolicy="allow"})
+	ml:depends({macpolicy="deny"})
+	nt.mac_hints(function(mac, name) ml:value(mac, "%s (%s)" %{ mac, name }) end)
+	
 end
 
 
@@ -507,7 +583,6 @@ if hwtype == "mac80211" then
 end
 
 
-
 -------------------- Madwifi Interface ----------------------
 
 if hwtype == "atheros" then
@@ -623,6 +698,28 @@ if hwtype == "broadcom" then
 	bssid:depends({mode="adhoc"})
 end
 
+
+-------------------- Ralink Interface ----------------------
+
+if hwtype == "rt2860v2"  or hwtype == "mt7610" or hwtype == "mt7612" or hwtype == "mt7601u" then
+	mode:value("wds", translate("WDS"))
+	mode:value("monitor", translate("Monitor"))
+
+	hidden = s:taboption("general", Flag, "hidden", translate("Hide <abbr title=\"Extended Service Set Identifier\">ESSID</abbr>"))
+	hidden:depends({mode="ap"})
+	hidden:depends({mode="adhoc"})
+	hidden:depends({mode="wds"})
+
+	isolate = s:taboption("advanced", Flag, "isolate", translate("Separate Clients"),
+	 translate("Prevents client-to-client communication"))
+	isolate:depends({mode="ap"})
+
+	s:taboption("advanced", Flag, "doth", "802.11h")
+	s:taboption("advanced", Flag, "wmm", translate("WMM Mode"))
+
+	bssid:depends({mode="wds"})
+	bssid:depends({mode="adhoc"})
+end
 
 ----------------------- HostAP Interface ---------------------
 
@@ -771,6 +868,10 @@ elseif hwtype == "broadcom" then
 	encr:value("psk", "WPA-PSK")
 	encr:value("psk2", "WPA2-PSK")
 	encr:value("psk+psk2", "WPA-PSK/WPA2-PSK Mixed Mode")
+elseif hwtype == "rt2860v2"  or hwtype == "mt7610"  or hwtype == "mt7612" or hwtype == "mt7601u" then
+	encr:value("psk", "WPA-PSK")
+	encr:value("psk2", "WPA2-PSK")
+	encr:value("psk+psk2", "WPA-PSK/WPA2-PSK Mixed Mode")
 end
 
 auth_server = s:taboption("encryption", Value, "auth_server", translate("Radius-Authentication-Server"))
@@ -879,6 +980,19 @@ for slot=1,4 do
 		end
 		return Value.write(self, section, value)
 	end
+end
+
+
+if hwtype == "rt2860v2"  or hwtype == "mt7610"  or hwtype == "mt7612" or hwtype == "mt7601u" then	
+	wps = s:taboption("encryption", ListValue, "wps", translate("WPS Mode"))
+	wps:value("", translate("disable"))
+	wps:value("pbc", translate("PBC"))
+	wps:value("pin", translate("PIN"))
+	pin = s:taboption("encryption", Value, "pin", translate("WPS PIN"))
+	wps:depends({mode="ap", encryption="psk"})
+	wps:depends({mode="ap", encryption="psk2"})
+	wps:depends({mode="ap", encryption="psk+psk2"})
+	pin:depends({wps="pin"})
 end
 
 
