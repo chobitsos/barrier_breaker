@@ -213,7 +213,7 @@ case $board in
 	hc5661)
 		ucidef_set_led_default "power" "power" "hc5661:power" "1"
 		ucidef_set_led_netdev "wan" "wan" "hc5661:internet" "eth0.2"
-		set_wifi_led "hc5661:wifi"
+		ucidef_set_led_netdev "wifi_led" "wifi" "hc5661:wifi" "ra0"
 		;;
 esac
 
