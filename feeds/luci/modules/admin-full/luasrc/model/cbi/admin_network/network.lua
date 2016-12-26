@@ -70,5 +70,13 @@ if fs.access("/usr/sbin/br2684ctl") then
 end
 
 local network = require "luci.model.network"
+if network:has_ipv6() then
+	local s = m:section(NamedSection, "globals", "globals", translate("Global network options"))
+	local o = s:option(Value, "ula_prefix", translate("IPv6 ULA-Prefix"))
+	o.datatype = "ip6addr"
+	o.rmempty = true
+	m.pageaction = true
+end
+
 
 return m
