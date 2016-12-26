@@ -261,6 +261,9 @@ $(eval $(call application,qos,Quality of Service configuration module,\
 
 $(eval $(call application,commands,LuCI Shell Command Module))
 
+$(eval $(call application,mjpg-streamer,MJPG-Streamer service configuration module,\
+        +PACKAGE_luci-app-mjpg-streamer:mjpg-streamer))
+
 
 ### Themes ###
 define theme
